@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Review Form</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <main>
+
+        <!-- Status message will be shown if redirected from process.php -->
+        <?php if(isset($_GET['status'])): ?>
+            <div class="status-message <?php echo $_GET['status'] === 'success' ? 'success' : 'error'; ?>">
+                <?php echo urldecode($_GET['message']); ?>
+            </div>
+        <?php endif; ?>
+
+        <form action="index.php" method="post">
+            <h1 class="form-heading">Student Review</h1>
+            
+            <label for="name">Name</label>
+            <input type="text" name="name" id="name" placeholder="Enter Your Name" required>
+
+            <label for="email">E-Mail</label>
+            <input type="email" name="email" id="email" placeholder="Enter Your Email" required>
+
+            <label for="rollno">Roll Number</label>
+            <input type="text" name="rollno" id="rollno" placeholder="Enter Your Roll Number" required>
+
+            <label for="branch">Branch</label>
+            <select name="branch" id="branch" required>
+                <option value="" disabled selected>Select Branch</option>
+                <option value="cse">Computer Science & Engineering</option>
+                <option value="civil">Civil Engineering</option>
+            </select>
+
+            <label for="admissionYear">Admission Year</label>
+            <input type="text" name="admissionYear" id="admissionYear" placeholder="Admission Year e.g., 2022" required>
+
+            <label for="passoutYear">Completion Year</label>
+            <input type="text" name="passoutYear" id="passoutYear" placeholder="Pass Out Year e.g., 2025" required>
+
+            <label for="feedback">Feedback</label>
+            <textarea name="feedback" id="feedback" placeholder="Share Your Experience About The College" rows="8"  required></textarea>
+
+            <button>Submit</button>
+
+        </form>
+    </main>
+    <script>
+        // Check for URL parameters on page load to show alerts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Parse URL query parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status');
+            const message = urlParams.get('message');
+            
+            if (status && message) {
+                // Show SweetAlert based on status
+                Swal.fire({
+                    title: status === 'success' ? 'Success!' : 'Error!',
+                    text: decodeURIComponent(message),
+                    icon: status === 'success' ? 'success' : 'error',
+                    confirmButtonText: 'OK'
+                });
+                
+                // Clean up URL after showing the alert
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+        
+        // Optional: AJAX form submission for an even smoother experience
+        
+        document.getElementById('studentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('index.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())  // Assuming PHP returns JSON
+            .then(data => {
+                // Show success message
+                Swal.fire({
+                    title: data.status === 'success' ? 'Success!' : 'Error!',
+                    text: data.message,
+                    icon: data.status === 'success' ? 'success' : 'error',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    // Reset form after clicking OK if submission was successful
+                    if (result.isConfirmed && data.status === 'success') {
+                        document.getElementById('studentForm').reset();
+                    }
+                });
+            })
+            .catch(error => {
+                // Show error message if fetch fails
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Failed to submit your review. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        });
+        
+    </script>
+</body>
+</html>
